@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "got-episodes"
+version = "0.1.0"
+description = ""
+authors = ["Diogo Vieira <diogo.romero.paz@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.115.0"
+pydantic = "^2.9.2"
+httpx = "^0.27.2"
+uvicorn = "^0.30.6"
+django = "^5.1.1"
+daphne = "^4.1.2"
+channels = "^4.1.0"
+starlette = ">=0.37.2,<0.39.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
