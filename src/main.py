@@ -1,6 +1,6 @@
 # main.py or app.py
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import httpx
 
 OMDB_API_KEY = '428f05c3'  # Replace with your actual API key
@@ -25,7 +25,7 @@ async def fetch_episode_ids():
                 data = response.json()
                 if 'Episode' in data:  # Check if the episode exists
                     episode_id = data['imdbID']
-                    episode_ids.append(episode_id)
+                    episode_ids.append((season, episode, episode_id))  # Store season, episode, and ID
                     print(f"Season {season}, Episode {episode}: ID = {episode_id}")
 
     return episode_ids
@@ -42,7 +42,7 @@ async def fetch_episode_details(episode_ids):
     episode_details = []
 
     async with httpx.AsyncClient() as client:
-        for episode_id in episode_ids:
+        for season, episode, episode_id in episode_ids:  # Unpack season, episode, and ID
             response = await client.get(base_url, params={
                 'i': episode_id,
                 'apikey': OMDB_API_KEY
@@ -50,20 +50,27 @@ async def fetch_episode_details(episode_ids):
             data = response.json()
             if 'Title' in data and 'imdbRating' in data:  # Check if the response contains Title and Rating
                 episode_details.append({
+                    "season": season,           # Add season number
+                    "episode": episode,         # Add episode number
                     "id": episode_id,
                     "title": data['Title'],
                     "ratings": data['Ratings'],
                     "released": data['Released']
                 })
+            else:
+                print(f"Failed to fetch details for episode ID: {episode_id}. Response: {data}")
 
     return episode_details
 
 # Step 5: Create a FastAPI endpoint to get episode titles and ratings
 @app.get("/fetch-episode-details")
 async def get_episode_details():
-    episode_ids = await fetch_episode_ids()  # Fetch episode IDs
-    episode_details = await fetch_episode_details(episode_ids)  # Fetch details using IDs
-    return {"episode_details": episode_details}
+    try:
+        episode_ids = await fetch_episode_ids()  # Fetch episode IDs
+        episode_details = await fetch_episode_details(episode_ids)  # Fetch details using IDs
+        return {"episode_details": episode_details}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Example of running the FastAPI application
 if __name__ == "__main__":
