@@ -52,7 +52,8 @@ async def fetch_episode_details(episode_ids):
                 episode_details.append({
                     "id": episode_id,
                     "title": data['Title'],
-                    "rating": data['imdbRating']
+                    "ratings": data['Ratings'],
+                    "released": data['Released']
                 })
 
     return episode_details
